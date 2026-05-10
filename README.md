@@ -8,12 +8,12 @@ A harness is everything in your repo that determines how reliably an AI agent ca
 
 ## The Four Skills
 
-| Skill | What it does | Time |
-|---|---|---|
-| [`harness-init`](skills/harness-init/) | Reads your repo, detects gaps, generates a complete harness in one pass | ~2 min |
-| [`harness-audit`](skills/harness-audit/) | Scores 5 subsystems in under 30 seconds, gives a prioritized fix list | ~30 sec |
-| [`harness-handoff`](skills/harness-handoff/) | Auto-extracts decisions and blockers from git, writes a session handoff | ~10 sec |
-| [`harness-onboard`](skills/harness-onboard/) | Orients a new developer to the harness in under 5 minutes | ~5 min |
+| Skill | What it does |
+|---|---|
+| [`harness-init`](skills/harness-init/) | Reads your repo, detects gaps, generates a complete harness in one pass |
+| [`harness-audit`](skills/harness-audit/) | Scores 5 subsystems, gives a prioritized fix list — runs in seconds |
+| [`harness-handoff`](skills/harness-handoff/) | Scans commit messages for decisions and tracked files for blockers, writes a session handoff |
+| [`harness-onboard`](skills/harness-onboard/) | Orients a new developer or agent to the harness in under 5 minutes |
 
 ## See it in action
 
@@ -48,22 +48,21 @@ Fix the lowest subsystem. Re-run. Watch the score move.
 ```bash
 git clone https://github.com/tomershahar/agent-harness-kit
 cd agent-harness-kit
-ln -sf "$PWD/skills/harness-init/scripts/harness-init.sh"    ~/.local/bin/harness-init
-ln -sf "$PWD/skills/harness-audit/scripts/harness-audit.sh"  ~/.local/bin/harness-audit
-ln -sf "$PWD/skills/harness-handoff/scripts/harness-handoff.sh" ~/.local/bin/harness-handoff
-ln -sf "$PWD/skills/harness-onboard/scripts/harness-onboard.sh" ~/.local/bin/harness-onboard
+for skill in init audit handoff onboard; do
+  ln -sf "$PWD/skills/harness-$skill/scripts/harness-$skill.sh" ~/.local/bin/harness-$skill
+done
 ```
 
 Then from any project root:
 
 ```bash
-harness-init --yes  # first time setup (non-interactive, works in Claude Code)
+harness-init --yes  # auto-detects stack, no prompts — recommended default
 harness-audit       # weekly health check
 harness-handoff     # end of every session
 harness-onboard     # when a new developer joins
 ```
 
-> **Running inside Claude Code?** Always use `harness-init --yes`. The `--yes` flag skips the interactive prompts (Claude Code can't send keystrokes to stdin). All values are auto-detected from the repo.
+Running in a real terminal and want to confirm the detected values? Use `harness-init` without `--yes` for an interactive walkthrough.
 
 **Only need it once?** Run the bash scripts directly without installing:
 
@@ -90,7 +89,7 @@ Any gaps detected in your repo (missing test runner, no entry point, etc.) are e
 
 ```bash
 bash tests/run-all.sh
-# 90 tests: unit + integration per skill + full 4-skill E2E chain
+# 91 tests: unit + integration per skill + full 4-skill E2E chain
 ```
 
 ## Resources
