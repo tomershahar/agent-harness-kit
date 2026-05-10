@@ -179,7 +179,7 @@ echo ""
 
 # ── Generate init.sh ─────────────────────────────────────────────────────────
 
-if [ ! -f "$PROJECT_ROOT/init.sh" ]; then
+if [ ! -f "$PROJECT_ROOT/init.sh" ] || [ ! -s "$PROJECT_ROOT/init.sh" ]; then
   sed \
     -e "s|{{PROJECT_NAME}}|$PROJECT_NAME|g" \
     -e "s|{{INSTALL_COMMAND}}|$INSTALL_COMMAND|g" \

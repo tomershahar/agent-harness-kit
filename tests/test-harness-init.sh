@@ -115,6 +115,22 @@ grep -q "HARNESS-GAP" "$TMP_MESSY/AGENTS.md" \
   && pass "messy project has HARNESS-GAP warning in AGENTS.md" \
   || fail "messy project missing HARNESS-GAP warning"
 
+# Empty init.sh should be overwritten
+TMP_EMPTY=$(mktemp -d)
+git -C "$TMP_EMPTY" init -q
+git -C "$TMP_EMPTY" config user.email "test@test.com"
+git -C "$TMP_EMPTY" config user.name "Test"
+cat > "$TMP_EMPTY/package.json" << 'PKGJSON'
+{"name":"empty-init-test","version":"1.0.0","scripts":{"test":"echo ok"}}
+PKGJSON
+touch "$TMP_EMPTY/init.sh"
+cd "$TMP_EMPTY"
+bash "$REPO_ROOT/skills/harness-init/scripts/harness-init.sh" --yes > /dev/null 2>&1
+[ -s "$TMP_EMPTY/init.sh" ] \
+  && pass "empty init.sh is overwritten by harness-init" \
+  || fail "empty init.sh not overwritten"
+rm -rf "$TMP_EMPTY"
+
 rm -rf "$TMP_READY" "$TMP_MESSY"
 
 grep -q "Copilot" "$REPO_ROOT/skills/harness-init/references/tool-compatibility.md" \
