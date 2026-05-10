@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 # harness-init.sh — Generate a complete agent harness from an existing repo.
 # Run from your project root: bash /path/to/harness-init.sh
+# Non-interactive (Claude Code / CI): bash /path/to/harness-init.sh --yes
 set -euo pipefail
+
+YES_MODE=false
+for arg in "$@"; do
+  [ "$arg" = "--yes" ] || [ "$arg" = "-y" ] && YES_MODE=true
+done
 
 command -v python3 >/dev/null 2>&1 || { echo "Error: python3 is required but not found. Install python3 and re-run."; exit 1; }
 
@@ -114,25 +120,32 @@ if [ -n "$READINESS_WARNINGS" ]; then
 fi
 echo ""
 
-# ── Ask three questions ──────────────────────────────────────────────────────
+# ── Ask three questions (skipped in --yes mode) ──────────────────────────────
 
-echo "Question 1/3: Tech stack detected above. Press Enter to confirm, or type correction:"
-read -r TECH_CORRECTION
-TECH_STACK="${TECH_CORRECTION:-auto-detected}"
+if $YES_MODE; then
+  echo "[auto] Using detected tech stack, solo team size, claude-code tooling"
+  TECH_STACK="auto-detected"
+  TEAM_SIZE="solo"
+  AGENT_TOOLS="claude-code"
+else
+  echo "Question 1/3: Tech stack detected above. Press Enter to confirm, or type correction:"
+  read -r TECH_CORRECTION
+  TECH_STACK="${TECH_CORRECTION:-auto-detected}"
 
-echo ""
-echo "Question 2/3: Team size? [1] Just me  [2] Small (2-5)  [3] Larger"
-read -r TEAM_SIZE_INPUT
-case "$TEAM_SIZE_INPUT" in
-  2) TEAM_SIZE="small team (2-5)" ;;
-  3) TEAM_SIZE="larger team" ;;
-  *) TEAM_SIZE="solo" ;;
-esac
+  echo ""
+  echo "Question 2/3: Team size? [1] Just me  [2] Small (2-5)  [3] Larger"
+  read -r TEAM_SIZE_INPUT
+  case "$TEAM_SIZE_INPUT" in
+    2) TEAM_SIZE="small team (2-5)" ;;
+    3) TEAM_SIZE="larger team" ;;
+    *) TEAM_SIZE="solo" ;;
+  esac
 
-echo ""
-echo "Question 3/3: Which agent tools? (e.g. claude-code, cursor, codex, gemini)"
-read -r TOOLS_INPUT
-AGENT_TOOLS="${TOOLS_INPUT:-claude-code}"
+  echo ""
+  echo "Question 3/3: Which agent tools? (e.g. claude-code, cursor, codex, gemini)"
+  read -r TOOLS_INPUT
+  AGENT_TOOLS="${TOOLS_INPUT:-claude-code}"
+fi
 
 echo ""
 echo "=== Generating harness files... ==="

@@ -57,11 +57,13 @@ ln -sf "$PWD/skills/harness-onboard/scripts/harness-onboard.sh" ~/.local/bin/har
 Then from any project root:
 
 ```bash
-harness-init      # first time setup
-harness-audit     # weekly health check
-harness-handoff   # end of every session
-harness-onboard   # when a new developer joins
+harness-init --yes  # first time setup (non-interactive, works in Claude Code)
+harness-audit       # weekly health check
+harness-handoff     # end of every session
+harness-onboard     # when a new developer joins
 ```
+
+> **Running inside Claude Code?** Always use `harness-init --yes`. The `--yes` flag skips the interactive prompts (Claude Code can't send keystrokes to stdin). All values are auto-detected from the repo.
 
 **Only need it once?** Run the bash scripts directly without installing:
 
