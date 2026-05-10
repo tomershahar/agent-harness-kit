@@ -1,92 +1,105 @@
 # agent-harness-kit
 
-Four agent skills that help teams set up, audit, hand off, and onboard AI agent harnesses.
-Works with Claude Code, Cursor, Codex, Gemini CLI, and GitHub Copilot — or run the bash scripts directly.
-
----
-
-> Built on the foundations of the **[Learn Harness Engineering](https://github.com/walkinglabs/learn-harness-engineering)** course by Walking Labs.
-> Every design decision in these skills maps back to a specific lecture in that course.
-> See [`docs/course-reference.md`](docs/course-reference.md) for the full map.
-
----
-
-## The Four Skills
-
-| Skill | What it does | When to run |
-|---|---|---|
-| [`harness-init`](skills/harness-init/) | Reads your repo and generates a complete harness from scratch | Once, when starting a new project or joining one with no harness |
-| [`harness-audit`](skills/harness-audit/) | Scores your harness across 5 subsystems and gives a prioritized fix list | Weekly, or before a big session |
-| [`harness-handoff`](skills/harness-handoff/) | Auto-generates session-handoff.md and updates PROGRESS.md at session end | At the end of every working session |
-| [`harness-onboard`](skills/harness-onboard/) | Orients a new team member to the harness in under 5 minutes | Once, when a new developer joins the project |
-
-## Quick Start
-
-### Option A: Use with your agent tool
-
-Copy the skill directory you need into your project:
-
-```bash
-# Example: add harness-init to your project
-cp -r skills/harness-init/ /your/project/skills/harness-init/
-```
-
-Then trigger it:
-- **Claude Code**: type `harness-init` in chat
-- **Cursor**: add `trigger: harness-init` to `.cursorrules`
-- **Codex**: add `trigger: harness-init` to `AGENTS.md`
-- **Gemini CLI**: add `trigger: harness-init` to `GEMINI.md`
-
-### Option B: Run the bash script directly
-
-No agent tool required:
-
-```bash
-# From your project root:
-bash /path/to/agent-harness-kit/skills/harness-init/scripts/harness-init.sh
-bash /path/to/agent-harness-kit/skills/harness-audit/scripts/harness-audit.sh
-bash /path/to/agent-harness-kit/skills/harness-handoff/scripts/harness-handoff.sh
-bash /path/to/agent-harness-kit/skills/harness-onboard/scripts/harness-onboard.sh
-```
-
-### Option C: Install globally (Mac/Linux)
-
-Run any skill from any project directory:
-
-```bash
-git clone https://github.com/walkinglabs/agent-harness-kit
-ln -sf "$PWD/agent-harness-kit/skills/harness-init/scripts/harness-init.sh" ~/.local/bin/harness-init
-ln -sf "$PWD/agent-harness-kit/skills/harness-audit/scripts/harness-audit.sh" ~/.local/bin/harness-audit
-ln -sf "$PWD/agent-harness-kit/skills/harness-handoff/scripts/harness-handoff.sh" ~/.local/bin/harness-handoff
-ln -sf "$PWD/agent-harness-kit/skills/harness-onboard/scripts/harness-onboard.sh" ~/.local/bin/harness-onboard
-```
-
-Then from any project root: `harness-init`, `harness-audit`, `harness-handoff`, `harness-onboard`
+Your agent forgets context between sessions, re-derives the same answers, and onboards new developers from scratch every time. This kit fixes that with four skills that take any repo from zero to a fully instrumented agent harness.
 
 ## What is a Harness?
 
-A harness is everything in your engineering infrastructure outside the model weights — the files, scripts, and conventions that determine how much of the model's capability actually gets realized.
+A harness is everything in your repo that determines how reliably an AI agent can work in it — the files, scripts, and conventions that turn a capable model into a productive collaborator. Five subsystems: **Instructions, Tools, Environment, State, Feedback**. → [full explainer](docs/five-subsystems.md)
 
-A complete harness has five subsystems:
-1. **Instructions** — AGENTS.md, CLAUDE.md, docs hierarchy
-2. **Tools** — verification commands, test runners
-3. **Environment** — init.sh, locked dependencies
-4. **State** — PROGRESS.md, feature_list.json
-5. **Feedback** — test results, lint output, E2E checks
+## The Four Skills
 
-These skills help you build and maintain all five.
+| Skill | What it does | Time |
+|---|---|---|
+| [`harness-init`](skills/harness-init/) | Reads your repo, detects gaps, generates a complete harness in one pass | ~2 min |
+| [`harness-audit`](skills/harness-audit/) | Scores 5 subsystems in under 30 seconds, gives a prioritized fix list | ~30 sec |
+| [`harness-handoff`](skills/harness-handoff/) | Auto-extracts decisions and blockers from git, writes a session handoff | ~10 sec |
+| [`harness-onboard`](skills/harness-onboard/) | Orients a new developer to the harness in under 5 minutes | ~5 min |
 
-## Resources
+## See it in action
 
-- [Five Subsystems Explained](docs/five-subsystems.md) — one-pager for team adoption
-- [Architecture](ARCHITECTURE.md) — skill structure and file responsibilities
-- [Course Reference](docs/course-reference.md) — maps every design decision to a lecture
+Run `harness-audit` on any project that has been initialized:
+
+```
+## Harness Audit Report — 2026-05-10
+
+### Scores
+| Subsystem      | Score | Key finding
+|---|---|---
+| Instructions   | 5/5   | AGENTS.md is 46 lines — healthy
+| Tools          | 5/5   | Verification commands found and confirmed passing
+| Environment    | 3/5   | init.sh exists but has errors
+| State          | 5/5   | Both state files present and current
+| Feedback       | 1/5   | No test files detected
+| **Total**      | 19/25 | 76% health
+
+### Priority Fix List
+1. [Environment] Fix init.sh errors
+2. [Feedback] CRITICAL: No tests — agents will declare victory too early
+
+Status: NEEDS ATTENTION — fix lowest subsystem this week
+```
+
+Fix the lowest subsystem. Re-run. Watch the score move.
+
+## Quick Start
+
+**Recommended for teams: install globally** and use across all your repos.
+
+```bash
+git clone https://github.com/tomershahar/agent-harness-kit
+cd agent-harness-kit
+ln -sf "$PWD/skills/harness-init/scripts/harness-init.sh"    ~/.local/bin/harness-init
+ln -sf "$PWD/skills/harness-audit/scripts/harness-audit.sh"  ~/.local/bin/harness-audit
+ln -sf "$PWD/skills/harness-handoff/scripts/harness-handoff.sh" ~/.local/bin/harness-handoff
+ln -sf "$PWD/skills/harness-onboard/scripts/harness-onboard.sh" ~/.local/bin/harness-onboard
+```
+
+Then from any project root:
+
+```bash
+harness-init      # first time setup
+harness-audit     # weekly health check
+harness-handoff   # end of every session
+harness-onboard   # when a new developer joins
+```
+
+**Only need it once?** Run the bash scripts directly without installing:
+
+```bash
+bash /path/to/agent-harness-kit/skills/harness-init/scripts/harness-init.sh
+```
+
+**Using an agent tool?** Copy the skill into your project and trigger it by name (Claude Code, Cursor, Codex, Gemini CLI, GitHub Copilot — all supported).
+
+## What you get after `harness-init`
+
+```
+your-project/
+├── AGENTS.md          # project overview, run commands, hard constraints
+├── ARCHITECTURE.md    # layer diagram and invariants (fill in)
+├── feature_list.json  # feature tracker with status and verification commands
+├── init.sh            # one-command environment setup
+└── PROGRESS.md        # session log — what's done, what's next, decisions made
+```
+
+Any gaps detected in your repo (missing test runner, no entry point, etc.) are embedded as `# HARNESS-GAP:` comments so you see exactly what needs fixing.
 
 ## Testing
 
 ```bash
-bash tests/run-all.sh   # 90 tests: unit + integration + full 4-skill E2E chain
+bash tests/run-all.sh
+# 90 tests: unit + integration per skill + full 4-skill E2E chain
 ```
+
+## Resources
+
+- [Five Subsystems Explained](docs/five-subsystems.md) — shareable one-pager for team onboarding
+- [Architecture](ARCHITECTURE.md) — skill structure and file responsibilities
+- [Course Reference](docs/course-reference.md) — maps every design decision to a lecture
+
+## Credits
+
+Built on the foundations of the **[Learn Harness Engineering](https://github.com/walkinglabs/learn-harness-engineering)** course by Walking Labs.
 
 ## License
 
