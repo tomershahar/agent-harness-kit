@@ -128,6 +128,27 @@ rm -rf "$TMP_DECISIONS"
 
 rm -rf "$TMP_PROJECT" "$TMP_BLOCKED"
 
+TMP_DIFF=$(mktemp -d)
+git -C "$TMP_DIFF" init -q
+git -C "$TMP_DIFF" config user.email "test@test.com"
+git -C "$TMP_DIFF" config user.name "Test"
+cat > "$TMP_DIFF/AGENTS.md" << 'EOF'
+# AGENTS.md
+## Run Commands
+- Tests: echo ok
+EOF
+echo "# PROGRESS" > "$TMP_DIFF/PROGRESS.md"
+echo '{"features":[]}' > "$TMP_DIFF/feature_list.json"
+git -C "$TMP_DIFF" add . && git -C "$TMP_DIFF" commit -q -m "initial"
+echo "## Done today: something" >> "$TMP_DIFF/PROGRESS.md"
+git -C "$TMP_DIFF" add PROGRESS.md && git -C "$TMP_DIFF" commit -q -m "update progress"
+cd "$TMP_DIFF"
+DIFF_OUTPUT=$(bash "$REPO_ROOT/skills/harness-handoff/scripts/harness-handoff.sh" 2>/dev/null)
+echo "$DIFF_OUTPUT" | grep -qi "PROGRESS\|Done today\|Changes" \
+  && pass "handoff shows PROGRESS.md changes in output" \
+  || fail "handoff missing PROGRESS.md diff"
+rm -rf "$TMP_DIFF"
+
 echo ""
 echo "harness-handoff: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ] || exit 1

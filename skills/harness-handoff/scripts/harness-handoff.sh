@@ -173,6 +173,13 @@ EOF
 
 echo "  ✓ PROGRESS.md updated"
 
+PROGRESS_DIFF=$(git -C "$PROJECT_ROOT" diff HEAD -- PROGRESS.md 2>/dev/null | grep '^+[^+]' | head -8 | sed 's/^+/  + /' || true)
+if [ -n "$PROGRESS_DIFF" ]; then
+  echo ""
+  echo "  Changes to PROGRESS.md this session:"
+  echo "$PROGRESS_DIFF"
+fi
+
 # ── Step 5: Commit ───────────────────────────────────────────────────────────
 
 echo "=== Step 5: Committing ==="
