@@ -29,6 +29,8 @@ run_suite "$REPO_ROOT/tests/test-harness-handoff.sh"
 echo ""
 run_suite "$REPO_ROOT/tests/test-harness-onboard.sh"
 echo ""
+run_suite "$REPO_ROOT/tests/test-e2e.sh"
+echo ""
 
 echo "=== Total: $TOTAL_PASS passed, $TOTAL_FAIL failed ==="
 [ "$TOTAL_FAIL" -eq 0 ] || exit 1
