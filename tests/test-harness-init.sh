@@ -85,6 +85,36 @@ done
 
 rm -rf "$TMP_PROJECT"
 
+# Readiness check — clean project (has tests + manifest + entry point) should have no HARNESS-GAP
+TMP_READY=$(mktemp -d)
+git -C "$TMP_READY" init -q
+git -C "$TMP_READY" config user.email "test@test.com"
+git -C "$TMP_READY" config user.name "Test"
+echo '{"name":"ready-proj","scripts":{"test":"jest","build":"tsc"}}' > "$TMP_READY/package.json"
+mkdir -p "$TMP_READY/src"
+echo "test('ok', () => {})" > "$TMP_READY/src/app.test.js"
+git -C "$TMP_READY" add . && git -C "$TMP_READY" commit -q -m "init"
+cd "$TMP_READY"
+printf "\n1\nclaude-code\n" | bash "$REPO_ROOT/skills/harness-init/scripts/harness-init.sh" > /dev/null 2>&1
+grep -q "HARNESS-GAP" "$TMP_READY/AGENTS.md" \
+  && fail "clean project should not have HARNESS-GAP in AGENTS.md" \
+  || pass "clean project has no HARNESS-GAP warnings"
+
+# Readiness check — messy project (no tests, no manifest, no entry point) should get HARNESS-GAP
+TMP_MESSY=$(mktemp -d)
+git -C "$TMP_MESSY" init -q
+git -C "$TMP_MESSY" config user.email "test@test.com"
+git -C "$TMP_MESSY" config user.name "Test"
+echo "just a readme" > "$TMP_MESSY/README.md"
+git -C "$TMP_MESSY" add . && git -C "$TMP_MESSY" commit -q -m "init"
+cd "$TMP_MESSY"
+printf "\n1\nclaude-code\n" | bash "$REPO_ROOT/skills/harness-init/scripts/harness-init.sh" > /dev/null 2>&1
+grep -q "HARNESS-GAP" "$TMP_MESSY/AGENTS.md" \
+  && pass "messy project has HARNESS-GAP warning in AGENTS.md" \
+  || fail "messy project missing HARNESS-GAP warning"
+
+rm -rf "$TMP_READY" "$TMP_MESSY"
+
 echo ""
 echo "harness-init: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ] || exit 1

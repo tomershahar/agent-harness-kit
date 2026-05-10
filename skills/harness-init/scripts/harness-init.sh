@@ -62,6 +62,56 @@ fi
 echo "[detected] Project name: $PROJECT_NAME"
 echo ""
 
+# ── Repo readiness check ──────────────────────────────────────────────────────
+echo "[checking] Repo readiness..."
+
+READINESS_WARNINGS=""
+
+HAS_TESTS=false
+if [ -f "$PROJECT_ROOT/package.json" ] && grep -qE '"test"' "$PROJECT_ROOT/package.json" 2>/dev/null; then
+  HAS_TESTS=true
+elif find "$PROJECT_ROOT" -maxdepth 3 \( -name "*.test.*" -o -name "test_*.py" -o -name "*.spec.*" -o -name "test-*.sh" \) 2>/dev/null | grep -q .; then
+  HAS_TESTS=true
+elif [ -f "$PROJECT_ROOT/pyproject.toml" ] || [ -f "$PROJECT_ROOT/Cargo.toml" ]; then
+  HAS_TESTS=true
+fi
+
+if ! $HAS_TESTS; then
+  echo "  [WARN] No test runner detected"
+  READINESS_WARNINGS="${READINESS_WARNINGS}# HARNESS-GAP: No test runner found. Add a test script to package.json or create test files before relying on this harness.
+"
+fi
+
+HAS_MANIFEST=false
+for f in package.json pyproject.toml requirements.txt Cargo.toml go.mod; do
+  [ -f "$PROJECT_ROOT/$f" ] && HAS_MANIFEST=true && break
+done
+if ! $HAS_MANIFEST; then
+  echo "  [WARN] No package manifest found"
+  READINESS_WARNINGS="${READINESS_WARNINGS}# HARNESS-GAP: No package manifest (package.json, pyproject.toml, Cargo.toml, etc). Confirm tech stack and add one.
+"
+fi
+
+HAS_ENTRY=false
+for entry in src/index.js src/main.js src/main.ts src/main.py main.py src/main.rs index.js; do
+  [ -f "$PROJECT_ROOT/$entry" ] && HAS_ENTRY=true && break
+done
+if ! $HAS_ENTRY && [ -d "$PROJECT_ROOT/src" ] && find "$PROJECT_ROOT/src" -maxdepth 1 -type f 2>/dev/null | grep -q .; then
+  HAS_ENTRY=true
+fi
+if ! $HAS_ENTRY; then
+  echo "  [WARN] No clear entry point found"
+  READINESS_WARNINGS="${READINESS_WARNINGS}# HARNESS-GAP: No entry point found (src/index.js, main.py, etc). Document the project entry point in ARCHITECTURE.md.
+"
+fi
+
+if [ -n "$READINESS_WARNINGS" ]; then
+  echo ""
+  echo "  Gaps detected — HARNESS-GAP comments will be embedded in generated files."
+  echo "  Search for 'HARNESS-GAP' after init to see what needs filling in."
+fi
+echo ""
+
 # ── Ask three questions ──────────────────────────────────────────────────────
 
 echo "Question 1/3: Tech stack detected above. Press Enter to confirm, or type correction:"
@@ -134,6 +184,7 @@ fi
 # ── Generate AGENTS.md ───────────────────────────────────────────────────────
 
 if [ ! -f "$PROJECT_ROOT/AGENTS.md" ]; then
+  printf '%s' "$READINESS_WARNINGS" > /tmp/harness-rw.txt
   sed \
     -e "s|{{PROJECT_NAME}}|$PROJECT_NAME|g" \
     -e "s|{{PROJECT_DESCRIPTION}}|Add one-sentence project description here.|g" \
@@ -145,7 +196,12 @@ if [ ! -f "$PROJECT_ROOT/AGENTS.md" ]; then
     -e "s|{{CHECK_COMMAND}}|$CHECK_COMMAND|g" \
     -e "s|{{CONSTRAINT_1}}|All code must pass type checking before commit|g" \
     -e "s|{{CONSTRAINT_2}}|Do not commit broken builds|g" \
-    "$TEMPLATES_DIR/AGENTS.md.tpl" > "$PROJECT_ROOT/AGENTS.md"
+    "$TEMPLATES_DIR/AGENTS.md.tpl" > /tmp/harness-agents-pre.md
+  python3 -c "
+warnings = open('/tmp/harness-rw.txt').read()
+content = open('/tmp/harness-agents-pre.md').read()
+print(content.replace('{{READINESS_WARNINGS}}', warnings), end='')
+" > "$PROJECT_ROOT/AGENTS.md"
   echo "[created] AGENTS.md"
 else
   echo "[skipped] AGENTS.md already exists"

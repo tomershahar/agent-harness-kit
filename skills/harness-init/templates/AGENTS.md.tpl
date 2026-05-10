@@ -27,6 +27,8 @@ Before writing any code, complete in order:
 - {{CONSTRAINT_1}}
 - {{CONSTRAINT_2}}
 
+{{READINESS_WARNINGS}}
+
 ## Topic Docs
 
 - [Architecture](ARCHITECTURE.md) — read before modifying any layer boundaries
