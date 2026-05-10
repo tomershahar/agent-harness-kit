@@ -1,7 +1,7 @@
 # agent-harness-kit
 
-Three agent skills that help teams set up, maintain, and hand off AI agent harnesses.
-Works with Claude Code, Cursor, Codex, and Gemini CLI — or run the bash scripts directly.
+Four agent skills that help teams set up, audit, hand off, and onboard AI agent harnesses.
+Works with Claude Code, Cursor, Codex, Gemini CLI, and GitHub Copilot — or run the bash scripts directly.
 
 ---
 
@@ -46,7 +46,22 @@ No agent tool required:
 bash /path/to/agent-harness-kit/skills/harness-init/scripts/harness-init.sh
 bash /path/to/agent-harness-kit/skills/harness-audit/scripts/harness-audit.sh
 bash /path/to/agent-harness-kit/skills/harness-handoff/scripts/harness-handoff.sh
+bash /path/to/agent-harness-kit/skills/harness-onboard/scripts/harness-onboard.sh
 ```
+
+### Option C: Install globally (Mac/Linux)
+
+Run any skill from any project directory:
+
+```bash
+git clone https://github.com/walkinglabs/agent-harness-kit
+ln -sf "$PWD/agent-harness-kit/skills/harness-init/scripts/harness-init.sh" ~/.local/bin/harness-init
+ln -sf "$PWD/agent-harness-kit/skills/harness-audit/scripts/harness-audit.sh" ~/.local/bin/harness-audit
+ln -sf "$PWD/agent-harness-kit/skills/harness-handoff/scripts/harness-handoff.sh" ~/.local/bin/harness-handoff
+ln -sf "$PWD/agent-harness-kit/skills/harness-onboard/scripts/harness-onboard.sh" ~/.local/bin/harness-onboard
+```
+
+Then from any project root: `harness-init`, `harness-audit`, `harness-handoff`, `harness-onboard`
 
 ## What is a Harness?
 
@@ -64,6 +79,14 @@ These skills help you build and maintain all five.
 ## Resources
 
 - [Five Subsystems Explained](docs/five-subsystems.md) — one-pager for team adoption
+- [Architecture](ARCHITECTURE.md) — skill structure and file responsibilities
+- [Course Reference](docs/course-reference.md) — maps every design decision to a lecture
+
+## Testing
+
+```bash
+bash tests/run-all.sh   # 90 tests: unit + integration + full 4-skill E2E chain
+```
 
 ## License
 
