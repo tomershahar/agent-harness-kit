@@ -1,0 +1,19 @@
+{
+  "project": "agent-harness-kit",
+  "description": "Add project description here",
+  "schema": {
+    "status_values": ["not_started", "active", "blocked", "passing"],
+    "required_fields": ["id", "name", "behavior", "verification", "status"]
+  },
+  "features": [
+    {
+      "id": "F01",
+      "name": "First feature",
+      "behavior": "Describe what the user sees or gets",
+      "verification": "npm test",
+      "status": "not_started",
+      "evidence": null,
+      "testedAt": null
+    }
+  ]
+}
