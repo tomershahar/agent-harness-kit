@@ -43,7 +43,18 @@ OVERVIEW=$(awk '/^## Overview/{found=1; next} found && /^##/{exit} found{print}'
 if [ -n "$OVERVIEW" ]; then
   echo "$OVERVIEW"
 else
-  echo "  (No overview in $(basename "$AGENTS_FILE") — add a ## Overview section)"
+  # Fallback: first non-empty lines of README.md
+  if [ -f "$PROJECT_ROOT/README.md" ]; then
+    README_SUMMARY=$(grep -v '^#' "$PROJECT_ROOT/README.md" 2>/dev/null | grep -v '^$' | head -3 | sed 's/^/  /' || true)
+    if [ -n "$README_SUMMARY" ]; then
+      echo "  (from README.md — add ## Overview to $(basename "$AGENTS_FILE") for better context)"
+      echo "$README_SUMMARY"
+    else
+      echo "  (No overview found — add ## Overview to $(basename "$AGENTS_FILE"))"
+    fi
+  else
+    echo "  (No overview found — add ## Overview to $(basename "$AGENTS_FILE"))"
+  fi
 fi
 echo ""
 
@@ -59,12 +70,28 @@ else
 fi
 echo ""
 
-RUN_CMDS=$(awk '/^## Run Commands/{found=1; next} found && /^##/{exit} found{print}' "$AGENTS_FILE" | grep -v '^$' | head -8 | sed 's/^/  /')
+RUN_CMDS=$(awk '/^## Run Commands/{found=1; next} found && /^##/{exit} found{print}' "$AGENTS_FILE" | grep -v '^$' | head -8 | sed 's/^/  /' || true)
 if [ -n "$RUN_CMDS" ]; then
   echo "  Run commands:"
   echo "$RUN_CMDS"
+elif [ -f "$PROJECT_ROOT/package.json" ] && command -v python3 >/dev/null 2>&1; then
+  # Fallback: read scripts from package.json
+  PKG_SCRIPTS=$(python3 -c "
+import json
+try:
+  scripts = json.load(open('$PROJECT_ROOT/package.json')).get('scripts', {})
+  for k, v in list(scripts.items())[:6]:
+    print('  ' + k + ': ' + v)
+except: pass
+" 2>/dev/null)
+  if [ -n "$PKG_SCRIPTS" ]; then
+    echo "  (from package.json scripts — add ## Run Commands to $(basename "$AGENTS_FILE") for agent context)"
+    echo "$PKG_SCRIPTS"
+  else
+    echo "  [MISSING] No run commands — add ## Run Commands to $(basename "$AGENTS_FILE")"
+  fi
 else
-  echo "  [MISSING] No '## Run Commands' section in $(basename "$AGENTS_FILE")"
+  echo "  [MISSING] No run commands — add ## Run Commands to $(basename "$AGENTS_FILE")"
 fi
 echo ""
 
@@ -126,7 +153,7 @@ echo ""
 
 echo "## 5. Hard constraints (do not violate these)"
 echo ""
-CONSTRAINTS=$(awk '/^## Hard Constraints/{found=1; next} found && /^##/{exit} found && /^-/{print}' "$AGENTS_FILE" | head -5 | grep -v "HARNESS-GAP" | sed 's/^/  /')
+CONSTRAINTS=$(awk '/^## Hard Constraints/{found=1; next} found && /^##/{exit} found && /^-/{print}' "$AGENTS_FILE" | head -5 | grep -v "HARNESS-GAP" | sed 's/^/  /' || true)
 if [ -n "$CONSTRAINTS" ]; then
   echo "$CONSTRAINTS"
 else
