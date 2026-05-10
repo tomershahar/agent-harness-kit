@@ -103,11 +103,11 @@ Handoff complete. Next session starts with:
 
 ## Tool Notes
 
-| Capability | Claude Code | Cursor | Codex | Gemini CLI | Bash script |
-|---|---|---|---|---|---|
-| Read files | `Read` tool | file context | file context | file read | `cat` |
-| Run commands | `Bash` tool | terminal | shell | shell | direct |
-| Trigger | type `harness-handoff` | add to `.cursorrules` | add to `AGENTS.md` | add to `GEMINI.md` | `bash harness-handoff.sh` |
+| Capability | Claude Code | Cursor | Codex | Gemini CLI | GitHub Copilot | Bash script |
+|---|---|---|---|---|---|---|
+| Read files | `Read` tool | file context | file context | file read | Copilot Chat | `cat` |
+| Run commands | `Bash` tool | terminal | shell | shell | terminal | direct |
+| Trigger | type `harness-handoff` | add to `.cursorrules` | add to `AGENTS.md` | add to `GEMINI.md` | Paste into Copilot Chat | `bash harness-handoff.sh` |
 
 **To trigger from Cursor**, add to `.cursorrules`:
 ```

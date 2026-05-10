@@ -101,11 +101,11 @@ Output a summary:
 
 ## Tool Notes
 
-| Capability | Claude Code | Cursor | Codex | Gemini CLI | Bash script |
-|---|---|---|---|---|---|
-| Read files | `Read` tool | file context | file context | file read | `cat` |
-| Run commands | `Bash` tool | terminal | shell | shell | direct |
-| Trigger | type `harness-init` | add to `.cursorrules` | add to `AGENTS.md` | add to `GEMINI.md` | `bash harness-init.sh` |
+| Capability | Claude Code | Cursor | Codex | Gemini CLI | GitHub Copilot | Bash script |
+|---|---|---|---|---|---|---|
+| Read files | `Read` tool | file context | file context | file read | Copilot Chat | `cat` |
+| Run commands | `Bash` tool | terminal | shell | shell | terminal | direct |
+| Trigger | type `harness-init` | add to `.cursorrules` | add to `AGENTS.md` | add to `GEMINI.md` | Paste into Copilot Chat | `bash harness-init.sh` |
 
 **To trigger from Cursor**, add to `.cursorrules`:
 ```

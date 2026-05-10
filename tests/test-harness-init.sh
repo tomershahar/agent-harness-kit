@@ -117,6 +117,10 @@ grep -q "HARNESS-GAP" "$TMP_MESSY/AGENTS.md" \
 
 rm -rf "$TMP_READY" "$TMP_MESSY"
 
+grep -q "Copilot" "$REPO_ROOT/skills/harness-init/references/tool-compatibility.md" \
+  && pass "tool-compatibility.md mentions GitHub Copilot" \
+  || fail "tool-compatibility.md missing GitHub Copilot"
+
 echo ""
 echo "harness-init: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ] || exit 1

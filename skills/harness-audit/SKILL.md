@@ -89,11 +89,11 @@ Read `references/scoring-rubric.md` for exact criteria. For each subsystem, run 
 
 ## Tool Notes
 
-| Capability | Claude Code | Cursor | Codex | Gemini CLI | Bash script |
-|---|---|---|---|---|---|
-| Read files | `Read` tool | file context | file context | file read | `cat` |
-| Run commands | `Bash` tool | terminal | shell | shell | direct |
-| Trigger | type `harness-audit` | add to `.cursorrules` | add to `AGENTS.md` | add to `GEMINI.md` | `bash harness-audit.sh` |
+| Capability | Claude Code | Cursor | Codex | Gemini CLI | GitHub Copilot | Bash script |
+|---|---|---|---|---|---|---|
+| Read files | `Read` tool | file context | file context | file read | Copilot Chat | `cat` |
+| Run commands | `Bash` tool | terminal | shell | shell | terminal | direct |
+| Trigger | type `harness-audit` | add to `.cursorrules` | add to `AGENTS.md` | add to `GEMINI.md` | Paste into Copilot Chat | `bash harness-audit.sh` |
 
 **To trigger from Cursor**, add to `.cursorrules`:
 ```

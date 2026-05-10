@@ -50,6 +50,19 @@ When the user says "harness-handoff", follow the instructions in skills/harness-
 
 ---
 
+## GitHub Copilot (VS Code / JetBrains / CLI)
+
+**How to invoke:** Paste the skill instructions into a Copilot Chat window, or add the script path as a custom instruction via `.github/copilot-instructions.md`.
+
+**Notes:**
+- Place harness script paths in `.github/copilot-instructions.md` so Copilot knows to reference them
+- Copilot Chat can run terminal commands when given explicit paths — use `bash /path/to/harness-handoff.sh`
+- For workspace-level instructions, add key harness rules to `.github/copilot-instructions.md`
+
+**Limitation:** Copilot does not auto-read AGENTS.md. Manually reference it in your prompt or add its contents to `.github/copilot-instructions.md`.
+
+---
+
 ## Universal Fallback (no agent tool required)
 
 Run the bash script directly from your project root:
