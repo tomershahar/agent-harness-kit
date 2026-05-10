@@ -93,11 +93,12 @@ fi
 STATE_SCORE=0
 
 if [ -f "$PROJECT_ROOT/PROGRESS.md" ]; then
-  LAST_MODIFIED=$(git -C "$PROJECT_ROOT" log --follow --format="%at" -- PROGRESS.md 2>/dev/null | head -1 || echo "0")
-  if [ "$LAST_MODIFIED" = "0" ]; then
+  LAST_MODIFIED=$(git -C "$PROJECT_ROOT" log --follow --format="%at" -- PROGRESS.md 2>/dev/null | head -1 | tr -d '[:space:]' || echo "0")
+  if [ -z "$LAST_MODIFIED" ] || [ "$LAST_MODIFIED" = "0" ]; then
     LAST_MODIFIED=$(date +%s)
   fi
-  DAYS_OLD=$(( ( $(date +%s) - LAST_MODIFIED ) / 86400 ))
+  NOW=$(date +%s)
+  DAYS_OLD=$(( ( NOW - LAST_MODIFIED ) / 86400 ))
   if [ "$DAYS_OLD" -le 3 ]; then
     STATE_SCORE=$((STATE_SCORE + 3))
   else
