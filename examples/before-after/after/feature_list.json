@@ -1,0 +1,19 @@
+{
+  "project": "example-app",
+  "description": "Simple Node.js demo app",
+  "schema": {
+    "status_values": ["not_started", "active", "blocked", "passing"],
+    "required_fields": ["id", "name", "behavior", "verification", "status"]
+  },
+  "features": [
+    {
+      "id": "F01",
+      "name": "Hello World Output",
+      "behavior": "Running node src/index.js prints 'Hello world' to stdout",
+      "verification": "node src/index.js | grep 'Hello world'",
+      "status": "passing",
+      "evidence": "Verified — output matches expected string",
+      "testedAt": "2026-05-10T00:00:00Z"
+    }
+  ]
+}
