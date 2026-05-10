@@ -83,6 +83,18 @@ echo "$EMPTY_OUTPUT" | grep -qi "no harness\|harness-init\|missing\|not.*found\|
 
 rm -rf "$TMP_PROJECT" "$TMP_EMPTY"
 
+for field in name description when_to_use license; do
+  grep -q "^$field:" "$REPO_ROOT/skills/harness-onboard/SKILL.md" \
+    && pass "SKILL.md has frontmatter: $field" \
+    || fail "SKILL.md missing frontmatter: $field"
+done
+grep -q "Learn Harness Engineering" "$REPO_ROOT/skills/harness-onboard/SKILL.md" \
+  && pass "SKILL.md has course attribution" \
+  || fail "SKILL.md missing course attribution"
+grep -q "Copilot" "$REPO_ROOT/skills/harness-onboard/references/tool-compatibility.md" \
+  && pass "tool-compatibility.md mentions GitHub Copilot" \
+  || fail "tool-compatibility.md missing GitHub Copilot"
+
 echo ""
 echo "harness-onboard: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ] || exit 1
