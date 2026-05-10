@@ -84,6 +84,48 @@ echo "$BLOCKED_OUTPUT" | grep -q "HANDOFF BLOCKED\|FAILED" \
   && pass "handoff blocks on failing build/tests" \
   || fail "handoff did not block on failing project"
 
+# Decision extraction — commit messages with "decided:" should appear in session-handoff.md
+TMP_DECISIONS=$(mktemp -d)
+git -C "$TMP_DECISIONS" init -q
+git -C "$TMP_DECISIONS" config user.email "test@test.com"
+git -C "$TMP_DECISIONS" config user.name "Test"
+
+cat > "$TMP_DECISIONS/AGENTS.md" << 'EOF'
+# AGENTS.md
+## Overview
+Test project
+## Run Commands
+- Tests: echo ok
+EOF
+echo "# PROGRESS" > "$TMP_DECISIONS/PROGRESS.md"
+echo '{"features":[]}' > "$TMP_DECISIONS/feature_list.json"
+
+git -C "$TMP_DECISIONS" add .
+git -C "$TMP_DECISIONS" commit -q -m "initial"
+git -C "$TMP_DECISIONS" commit -q --allow-empty -m "decided: use JWT tokens instead of sessions"
+git -C "$TMP_DECISIONS" commit -q --allow-empty -m "chose: postgres over mongodb for ACID guarantees"
+
+cd "$TMP_DECISIONS"
+bash "$REPO_ROOT/skills/harness-handoff/scripts/harness-handoff.sh" > /dev/null 2>&1
+
+grep -qi "JWT\|decided\|chose" "$TMP_DECISIONS/session-handoff.md" \
+  && pass "handoff extracts decisions from git commits" \
+  || fail "handoff did not extract decisions from git commits"
+
+# Blocker detection
+echo "# TODO BLOCKED: waiting for API key" >> "$TMP_DECISIONS/AGENTS.md"
+git -C "$TMP_DECISIONS" add AGENTS.md
+git -C "$TMP_DECISIONS" commit -q -m "wip: blocked note"
+
+cd "$TMP_DECISIONS"
+bash "$REPO_ROOT/skills/harness-handoff/scripts/harness-handoff.sh" > /dev/null 2>&1
+
+grep -qi "BLOCKED\|waiting for API" "$TMP_DECISIONS/session-handoff.md" \
+  && pass "handoff flags BLOCKED markers in session-handoff.md" \
+  || fail "handoff did not flag BLOCKED markers"
+
+rm -rf "$TMP_DECISIONS"
+
 rm -rf "$TMP_PROJECT" "$TMP_BLOCKED"
 
 echo ""

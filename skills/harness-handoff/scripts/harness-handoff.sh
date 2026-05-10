@@ -95,44 +95,62 @@ echo "=== Step 2: Gathering session data ==="
 CHANGED_FILES=$(git -C "$PROJECT_ROOT" diff --name-only HEAD 2>/dev/null || echo "(no uncommitted changes)")
 RECENT_COMMITS=$(git -C "$PROJECT_ROOT" log --oneline -5 2>/dev/null || echo "(no commits yet)")
 
+DECISIONS=$(git -C "$PROJECT_ROOT" log --oneline -20 2>/dev/null \
+  | grep -iE "decided:|chose:|reason:|because|decision:" \
+  | sed 's/^[a-f0-9]* //' \
+  | head -5 \
+  || true)
+
+BLOCKERS=$(git -C "$PROJECT_ROOT" grep -i "BLOCKED" -- "*.md" "*.sh" "*.js" "*.ts" "*.py" 2>/dev/null \
+  | head -5 \
+  || true)
+
 echo ""
 
 # ── Step 3: Write session-handoff.md ─────────────────────────────────────────
 
 echo "=== Step 3: Writing session-handoff.md ==="
 
-cat > "$PROJECT_ROOT/session-handoff.md" << EOF
-# Session Handoff — $DATE
-
-## What Was Accomplished
-
-(Fill in: what features were completed this session, with evidence)
-
-## What Remains
-
-(Fill in: features still at not_started or active status)
-
-## Decisions Made
-
-(Fill in: WHY choices were made — reasoning that future sessions need)
-
-## Files Modified
-
-$CHANGED_FILES
-
-## Recent Commits
-
-$RECENT_COMMITS
-
-## Blockers
-
-(Fill in: anything blocking next steps, or "None")
-
-## Next Steps
-
-1. (Fill in: first action for next session)
-2. (Fill in: second action)
-EOF
+{
+  echo "# Session Handoff — $DATE"
+  echo ""
+  echo "## What Was Accomplished"
+  echo ""
+  echo "(Fill in: what features were completed this session, with evidence)"
+  echo ""
+  echo "## What Remains"
+  echo ""
+  echo "(Fill in: features still at not_started or active status)"
+  echo ""
+  echo "## Decisions Made"
+  echo ""
+  if [ -n "$DECISIONS" ]; then
+    echo "$DECISIONS" | while IFS= read -r line; do echo "- $line"; done
+  else
+    echo "(No decision-pattern commits found — fill in manually: decided X because Y)"
+  fi
+  echo ""
+  echo "## Unresolved Blockers"
+  echo ""
+  if [ -n "$BLOCKERS" ]; then
+    echo "$BLOCKERS" | while IFS= read -r line; do echo "- $line"; done
+  else
+    echo "None"
+  fi
+  echo ""
+  echo "## Files Modified"
+  echo ""
+  echo "$CHANGED_FILES"
+  echo ""
+  echo "## Recent Commits"
+  echo ""
+  echo "$RECENT_COMMITS"
+  echo ""
+  echo "## Next Steps"
+  echo ""
+  echo "1. (Fill in: first action for next session)"
+  echo "2. (Fill in: second action)"
+} > "$PROJECT_ROOT/session-handoff.md"
 
 echo "  ✓ session-handoff.md written"
 
