@@ -55,11 +55,23 @@ fi
 
 # ── Subsystem 2: Tools ────────────────────────────────────────────────────────
 
-if [ -n "$AGENTS_FILE" ] && grep -qE "npm test|pytest|cargo test|yarn test|npm run check" "$AGENTS_FILE" 2>/dev/null; then
-  SCORE_TOOLS=3
-  FINDINGS+=("Tools|3/5|Verification commands found in $(basename $AGENTS_FILE) — not run-tested")
-  FIXES+=("$FIX_NUM. [Tools] Run each verification command in $(basename $AGENTS_FILE) and confirm they exit 0")
-  FIX_NUM=$((FIX_NUM + 1))
+if [ -n "$AGENTS_FILE" ] && grep -qE "npm test|pytest|cargo test|yarn test|npm run check|bash.*test|make test|go test" "$AGENTS_FILE" 2>/dev/null; then
+  # Try to run a detected test runner to verify it actually works
+  TOOLS_VERIFIED=false
+  if [ -f "$PROJECT_ROOT/tests/run-all.sh" ] && bash "$PROJECT_ROOT/tests/run-all.sh" > /tmp/harness-audit-tools.log 2>&1; then
+    TOOLS_VERIFIED=true
+  elif [ -f "$PROJECT_ROOT/package.json" ] && npm test --prefix "$PROJECT_ROOT" > /tmp/harness-audit-tools.log 2>&1; then
+    TOOLS_VERIFIED=true
+  fi
+  if $TOOLS_VERIFIED; then
+    SCORE_TOOLS=5
+    FINDINGS+=("Tools|5/5|Verification commands found and confirmed passing")
+  else
+    SCORE_TOOLS=3
+    FINDINGS+=("Tools|3/5|Verification commands found in $(basename $AGENTS_FILE) — not run-tested")
+    FIXES+=("$FIX_NUM. [Tools] Run each verification command in $(basename $AGENTS_FILE) and confirm they exit 0")
+    FIX_NUM=$((FIX_NUM + 1))
+  fi
 else
   SCORE_TOOLS=1
   FINDINGS+=("Tools|1/5|No verification commands found")
@@ -141,17 +153,32 @@ fi
 if find "$PROJECT_ROOT" -maxdepth 3 -name "*.spec.*" 2>/dev/null | grep -q .; then
   TEST_FILES=$((TEST_FILES + $(find "$PROJECT_ROOT" -maxdepth 3 -name "*.spec.*" 2>/dev/null | wc -l | tr -d ' ')))
 fi
+if find "$PROJECT_ROOT" -maxdepth 3 -name "test-*.sh" -o -name "test_*.sh" 2>/dev/null | grep -q .; then
+  TEST_FILES=$((TEST_FILES + $(find "$PROJECT_ROOT" -maxdepth 3 \( -name "test-*.sh" -o -name "test_*.sh" \) 2>/dev/null | wc -l | tr -d ' ')))
+fi
 
-if [ "$TEST_FILES" -ge 5 ]; then
-  SCORE_FEEDBACK=3
-  FINDINGS+=("Feedback|3/5|$TEST_FILES test files found — no E2E detected")
-  FIXES+=("$FIX_NUM. [Feedback] Add E2E tests for 3-layer verification (Lecture 10)")
-  FIX_NUM=$((FIX_NUM + 1))
-elif [ "$TEST_FILES" -ge 1 ]; then
-  SCORE_FEEDBACK=2
-  FINDINGS+=("Feedback|2/5|$TEST_FILES test files found — coverage may be low")
-  FIXES+=("$FIX_NUM. [Feedback] Expand test coverage — add integration and E2E tests (Lecture 10)")
-  FIX_NUM=$((FIX_NUM + 1))
+if [ "$TEST_FILES" -ge 1 ]; then
+  # Check if a test runner exists and passes (multi-layer coverage)
+  FEEDBACK_RUNNER=false
+  if [ -f "$PROJECT_ROOT/tests/run-all.sh" ] && bash "$PROJECT_ROOT/tests/run-all.sh" > /tmp/harness-audit-feedback.log 2>&1; then
+    FEEDBACK_RUNNER=true
+  elif [ -f "$PROJECT_ROOT/package.json" ] && npm test --prefix "$PROJECT_ROOT" > /tmp/harness-audit-feedback.log 2>&1; then
+    FEEDBACK_RUNNER=true
+  fi
+  if $FEEDBACK_RUNNER && [ "$TEST_FILES" -ge 3 ]; then
+    SCORE_FEEDBACK=5
+    FINDINGS+=("Feedback|5/5|$TEST_FILES test files found — test suite passes")
+  elif [ "$TEST_FILES" -ge 5 ]; then
+    SCORE_FEEDBACK=3
+    FINDINGS+=("Feedback|3/5|$TEST_FILES test files found — no verified E2E runner")
+    FIXES+=("$FIX_NUM. [Feedback] Add a run-all.sh test runner for 3-layer verification (Lecture 10)")
+    FIX_NUM=$((FIX_NUM + 1))
+  else
+    SCORE_FEEDBACK=2
+    FINDINGS+=("Feedback|2/5|$TEST_FILES test files found — coverage may be low")
+    FIXES+=("$FIX_NUM. [Feedback] Expand test coverage — add integration and E2E tests (Lecture 10)")
+    FIX_NUM=$((FIX_NUM + 1))
+  fi
 else
   SCORE_FEEDBACK=1
   FINDINGS+=("Feedback|1/5|No test files detected")
