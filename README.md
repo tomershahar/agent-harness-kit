@@ -11,13 +11,14 @@ Works with Claude Code, Cursor, Codex, and Gemini CLI — or run the bash script
 
 ---
 
-## The Three Skills
+## The Four Skills
 
 | Skill | What it does | When to run |
 |---|---|---|
 | [`harness-init`](skills/harness-init/) | Reads your repo and generates a complete harness from scratch | Once, when starting a new project or joining one with no harness |
 | [`harness-audit`](skills/harness-audit/) | Scores your harness across 5 subsystems and gives a prioritized fix list | Weekly, or before a big session |
 | [`harness-handoff`](skills/harness-handoff/) | Auto-generates session-handoff.md and updates PROGRESS.md at session end | At the end of every working session |
+| [`harness-onboard`](skills/harness-onboard/) | Orients a new team member to the harness in under 5 minutes | Once, when a new developer joins the project |
 
 ## Quick Start
 
@@ -59,6 +60,10 @@ A complete harness has five subsystems:
 5. **Feedback** — test results, lint output, E2E checks
 
 These skills help you build and maintain all five.
+
+## Resources
+
+- [Five Subsystems Explained](docs/five-subsystems.md) — one-pager for team adoption
 
 ## License
 

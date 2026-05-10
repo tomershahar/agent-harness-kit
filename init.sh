@@ -10,12 +10,14 @@ echo "[1/2] Verifying bash scripts have valid syntax..."
 bash -n skills/harness-init/scripts/harness-init.sh
 bash -n skills/harness-audit/scripts/harness-audit.sh
 bash -n skills/harness-handoff/scripts/harness-handoff.sh
+bash -n skills/harness-onboard/scripts/harness-onboard.sh
 echo ""
 
 echo "[2/2] Verifying SKILL.md files exist..."
 test -f skills/harness-init/SKILL.md
 test -f skills/harness-audit/SKILL.md
 test -f skills/harness-handoff/SKILL.md
+test -f skills/harness-onboard/SKILL.md
 echo ""
 
 echo "=== Init complete. All checks passed. ==="

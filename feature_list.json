@@ -7,12 +7,12 @@
   },
   "features": [
     {
-      "id": "F01",
-      "name": "First feature",
-      "behavior": "Describe what the user sees or gets",
-      "verification": "npm test",
-      "status": "not_started",
-      "evidence": null,
+      "id": "harness-onboard",
+      "name": "harness-onboard skill",
+      "behavior": "New team member runs harness-onboard and gets oriented in under 5 minutes",
+      "verification": "bash tests/test-harness-onboard.sh",
+      "status": "passing",
+      "evidence": "tests/test-harness-onboard.sh passes",
       "testedAt": null
     }
   ]
