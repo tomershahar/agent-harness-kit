@@ -230,4 +230,6 @@ else
 fi
 
 echo ""
+echo "Scoring rubric: skills/harness-audit/references/scoring-rubric.md — what each score means with examples"
+echo ""
 echo "Based on: Learn Harness Engineering — https://github.com/walkinglabs/learn-harness-engineering"

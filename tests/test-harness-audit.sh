@@ -106,6 +106,17 @@ echo "$EMPTY_OUTPUT" | grep -q "CRITICAL" \
 
 rm -rf "$TMP_PROJECT" "$TMP_EMPTY"
 
+TMP_LINK=$(mktemp -d)
+git -C "$TMP_LINK" init -q
+touch "$TMP_LINK/README.md"
+git -C "$TMP_LINK" add . && git -C "$TMP_LINK" commit -q -m "init"
+cd "$TMP_LINK"
+LINK_OUTPUT=$(bash "$REPO_ROOT/skills/harness-audit/scripts/harness-audit.sh" 2>/dev/null)
+echo "$LINK_OUTPUT" | grep -q "scoring-rubric\|rubric" \
+  && pass "audit output includes rubric reference" \
+  || fail "audit output missing rubric reference"
+rm -rf "$TMP_LINK"
+
 echo ""
 echo "harness-audit: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ] || exit 1
