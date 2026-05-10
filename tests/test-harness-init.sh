@@ -60,6 +60,8 @@ echo '{"name":"test-project","version":"1.0.0","scripts":{"start":"node index.js
 mkdir -p "$TMP_PROJECT/src"
 echo 'console.log("hi")' > "$TMP_PROJECT/src/index.js"
 git -C "$TMP_PROJECT" init -q
+git -C "$TMP_PROJECT" config user.email "test@test.com"
+git -C "$TMP_PROJECT" config user.name "Test"
 git -C "$TMP_PROJECT" add .
 git -C "$TMP_PROJECT" commit -q -m "initial"
 

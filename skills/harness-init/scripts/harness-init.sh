@@ -3,6 +3,8 @@
 # Run from your project root: bash /path/to/harness-init.sh
 set -euo pipefail
 
+command -v python3 >/dev/null 2>&1 || { echo "Error: python3 is required but not found. Install python3 and re-run."; exit 1; }
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATES_DIR="$SCRIPT_DIR/../templates"
 PROJECT_ROOT="$(pwd)"
@@ -73,7 +75,7 @@ if [ -f "$PROJECT_ROOT/package.json" ] && grep -qE '"test"' "$PROJECT_ROOT/packa
 elif find "$PROJECT_ROOT" -maxdepth 3 \( -name "*.test.*" -o -name "test_*.py" -o -name "*.spec.*" -o -name "test-*.sh" \) 2>/dev/null | grep -q .; then
   HAS_TESTS=true
 elif [ -f "$PROJECT_ROOT/pyproject.toml" ] || [ -f "$PROJECT_ROOT/Cargo.toml" ]; then
-  HAS_TESTS=true
+  HAS_TESTS=true  # approximate: these ecosystems have built-in test runners
 fi
 
 if ! $HAS_TESTS; then
@@ -184,7 +186,9 @@ fi
 # ── Generate AGENTS.md ───────────────────────────────────────────────────────
 
 if [ ! -f "$PROJECT_ROOT/AGENTS.md" ]; then
-  printf '%s' "$READINESS_WARNINGS" > /tmp/harness-rw.txt
+  TMP_RW=$(mktemp)
+  TMP_PRE=$(mktemp)
+  printf '%s' "$READINESS_WARNINGS" > "$TMP_RW"
   sed \
     -e "s|{{PROJECT_NAME}}|$PROJECT_NAME|g" \
     -e "s|{{PROJECT_DESCRIPTION}}|Add one-sentence project description here.|g" \
@@ -196,12 +200,14 @@ if [ ! -f "$PROJECT_ROOT/AGENTS.md" ]; then
     -e "s|{{CHECK_COMMAND}}|$CHECK_COMMAND|g" \
     -e "s|{{CONSTRAINT_1}}|All code must pass type checking before commit|g" \
     -e "s|{{CONSTRAINT_2}}|Do not commit broken builds|g" \
-    "$TEMPLATES_DIR/AGENTS.md.tpl" > /tmp/harness-agents-pre.md
+    "$TEMPLATES_DIR/AGENTS.md.tpl" > "$TMP_PRE"
   python3 -c "
-warnings = open('/tmp/harness-rw.txt').read()
-content = open('/tmp/harness-agents-pre.md').read()
+import sys
+warnings = open(sys.argv[1]).read()
+content  = open(sys.argv[2]).read()
 print(content.replace('{{READINESS_WARNINGS}}', warnings), end='')
-" > "$PROJECT_ROOT/AGENTS.md"
+" "$TMP_RW" "$TMP_PRE" > "$PROJECT_ROOT/AGENTS.md"
+  rm -f "$TMP_RW" "$TMP_PRE"
   echo "[created] AGENTS.md"
 else
   echo "[skipped] AGENTS.md already exists"
