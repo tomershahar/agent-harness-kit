@@ -11,7 +11,9 @@ done
 
 command -v python3 >/dev/null 2>&1 || { echo "Error: python3 is required but not found. Install python3 and re-run."; exit 1; }
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Resolve symlinks so template paths work when script is installed globally
+SCRIPT_REAL="$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || python3 -c "import os,sys; print(os.path.realpath(sys.argv[1]))" "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_REAL")" && pwd)"
 TEMPLATES_DIR="$SCRIPT_DIR/../templates"
 PROJECT_ROOT="$(pwd)"
 DATE=$(date +%Y-%m-%d)
@@ -142,9 +144,33 @@ else
   esac
 
   echo ""
-  echo "Question 3/3: Which agent tools? (e.g. claude-code, cursor, codex, gemini)"
+  VALID_TOOLS="claude-code cursor codex gemini copilot"
+  echo "Question 3/3: Which agent tools? Valid: claude-code, cursor, codex, gemini, copilot"
   read -r TOOLS_INPUT
-  AGENT_TOOLS="${TOOLS_INPUT:-claude-code}"
+  TOOLS_INPUT="${TOOLS_INPUT:-claude-code}"
+  # Fuzzy-correct common typos by matching against valid tool names
+  AGENT_TOOLS=""
+  for word in $TOOLS_INPUT; do
+    matched=""
+    for valid in $VALID_TOOLS; do
+      # Accept if input matches start of a valid tool name (e.g. "claude-codd" → "claude-code")
+      case "$valid" in
+        "${word}"*) matched="$valid"; break ;;
+      esac
+      # Also accept if a valid tool name starts with the input (e.g. "claude" → "claude-code")
+      case "$word" in
+        "${valid}"*) matched="$valid"; break ;;
+      esac
+    done
+    if [ -n "$matched" ]; then
+      AGENT_TOOLS="$AGENT_TOOLS $matched"
+    else
+      echo "  [WARN] '$word' is not a recognised tool — skipping (valid: $VALID_TOOLS)"
+    fi
+  done
+  AGENT_TOOLS="${AGENT_TOOLS# }"  # trim leading space
+  [ -z "$AGENT_TOOLS" ] && AGENT_TOOLS="claude-code"
+  echo "  [using] $AGENT_TOOLS"
 fi
 
 echo ""
